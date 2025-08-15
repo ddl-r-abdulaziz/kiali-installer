@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kialia
+  namespace: istio-system
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: rashamb93134.infra-team-sandbox.domino.tech
+      http:
+        paths:
+          - path: /kiali
+            pathType: Prefix
+            backend:
+              service:
+                name: kiali
+                port:
+                  number: 20001 # The port Kiali's service listens on (default is 20001)
