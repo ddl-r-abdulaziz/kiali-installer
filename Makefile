@@ -10,7 +10,8 @@ help: ## Show this help message
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-15s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 install-kiali: ## Install Kiali server using Helm
-	helm upgrade --install --namespace istio-system kiali-server kiali/kiali-server --set auth.strategy=anonymous
+	helm upgrade --install --namespace istio-system kiali-server kiali/kiali-server \
+	--set auth.strategy=anonymous 
 
 install-ingress: tools ## Apply ingress configuration
 	HOSTNAME=$$(kubectl get configmap platform-operator-config -n domino-operator -o jsonpath='{.data.domino\.yml}' | ./.tools/yq e '.hostname' -) && \
