@@ -1,0 +1,13 @@
+#@ load("@ytt:data", "data")
+external_services:
+    grafana:
+      enabled: true
+      internal_url: grafana.domino-platform:80
+      external_url: #@ data.values.hostname +"/grafana"
+auth:
+  strategy: anonymous
+kiali_feature_flags:
+  ui_defaults:
+    namespaces:
+    - domino-platform
+    - domino-compute
