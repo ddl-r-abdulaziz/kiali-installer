@@ -10,13 +10,11 @@ help: ## Show this help message
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-15s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 helm-repos: ## Add and update Helm repositories
-	helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 	helm repo add kiali https://kiali.org/helm-charts
 	helm repo update
 
-install-prometheus: helm-repos ## Install Prometheus server using Helm
-	helm upgrade --install --namespace istio-system prometheus-server prometheus-community/prometheus \
-	--set server.service.type=ClusterIP
+install-prometheus: ## Install Prometheus using Istio sample
+	kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.26/samples/addons/prometheus.yaml
 
 install-kiali: helm-repos install-prometheus ## Install Kiali server using Helm
 	helm upgrade --install --namespace istio-system kiali-server kiali/kiali-server \
