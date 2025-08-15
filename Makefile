@@ -1,4 +1,4 @@
-.PHONY: help install-kiali install-ingress install all
+.PHONY: help install-kiali install-ingress install all tools yq ytt
 
 all: install
 
@@ -12,9 +12,28 @@ help: ## Show this help message
 install-kiali: ## Install Kiali server using Helm
 	helm upgrade --install --namespace istio-system kiali-server kiali/kiali-server --set auth.strategy=anonymous
 
-install-ingress: ## Apply ingress configuration
-	HOSTNAME=$$(kubectl get configmap platform-operator-config -n domino-operator -o jsonpath='{.data.domino\.yml}' | yq e '.hostname' -) && \
-	ytt -f resources/ingress.yaml --data-value hostname=$$HOSTNAME | kubectl apply -f -
+install-ingress: tools ## Apply ingress configuration
+	HOSTNAME=$$(kubectl get configmap platform-operator-config -n domino-operator -o jsonpath='{.data.domino\.yml}' | ./.tools/yq e '.hostname' -) && \
+	./.tools/ytt -f resources/ingress.yaml --data-value hostname=$$HOSTNAME | kubectl apply -f -
+
+.tools:
+	mkdir -p .tools
+
+yq: .tools ## Download yq tool
+	@if [ ! -f .tools/yq ]; then \
+		echo "Downloading yq..."; \
+		curl -L "https://github.com/mikefarah/yq/releases/latest/download/yq_darwin_amd64" -o .tools/yq && \
+		chmod +x .tools/yq; \
+	fi
+
+ytt: .tools ## Download ytt tool  
+	@if [ ! -f .tools/ytt ]; then \
+		echo "Downloading ytt..."; \
+		curl -L "https://github.com/vmware-tanzu/carvel-ytt/releases/latest/download/ytt-darwin-amd64" -o .tools/ytt && \
+		chmod +x .tools/ytt; \
+	fi
+
+tools: yq ytt ## Download all tools
 
 install: install-kiali install-ingress
 
