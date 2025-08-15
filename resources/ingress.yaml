@@ -1,3 +1,5 @@
+#@ load("@ytt:data", "data")
+
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -6,7 +8,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: rashamb93134.infra-team-sandbox.domino.tech
+    - host: #@ data.values.hostname
       http:
         paths:
           - path: /kiali
@@ -15,4 +17,4 @@ spec:
               service:
                 name: kiali
                 port:
-                  number: 20001 # The port Kiali's service listens on (default is 20001)
+                  number: 20001 #! The port Kiali's service listens on (default is 20001)
