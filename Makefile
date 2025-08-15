@@ -1,4 +1,4 @@
-.PHONY: help install-kiali install-ingress install all tools yq ytt
+.PHONY: help install-kiali install-prometheus install-ingress install all tools yq ytt helm-repos
 
 all: install
 
@@ -9,9 +9,18 @@ help: ## Show this help message
 	@echo 'Targets:'
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-15s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-install-kiali: ## Install Kiali server using Helm
+helm-repos: ## Add and update Helm repositories
+	helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+	helm repo add kiali https://kiali.org/helm-charts
+	helm repo update
+
+install-prometheus: helm-repos ## Install Prometheus server using Helm
+	helm upgrade --install --namespace istio-system prometheus-server prometheus-community/prometheus \
+	--set server.service.type=ClusterIP
+
+install-kiali: helm-repos install-prometheus ## Install Kiali server using Helm
 	helm upgrade --install --namespace istio-system kiali-server kiali/kiali-server \
-	--set auth.strategy=anonymous 
+	--set auth.strategy=anonymous
 
 install-ingress: tools ## Apply ingress configuration
 	HOSTNAME=$$(kubectl get configmap platform-operator-config -n domino-operator -o jsonpath='{.data.domino\.yml}' | ./.tools/yq e '.hostname' -) && \
@@ -36,6 +45,6 @@ ytt: .tools ## Download ytt tool
 
 tools: yq ytt ## Download all tools
 
-install: install-kiali install-ingress
+install: install-prometheus install-kiali install-ingress
 
 
